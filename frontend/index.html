@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZChain Secure - Enterprise Blockchain Platform</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;--bg-secondary: #111118;--bg-card: #16161e;--bg-card-hover: #1a1a24;
+            --border: #252530;--border-light: #2a2a35;--text-primary: #c0c0c0;--text-secondary: #888899;
+            --text-bright: #e8e8f0;--accent-blue: #6a7a9a;--green: #4a9a6a;--red: #9a4a4a;--gold: #9a8a5a;
+            --silver: #a0a0b0;--silver-light: #c8c8d0;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;line-height:1.5}
+        .container{max-width:1440px;margin:0 auto;padding:24px}
+        .header{background:linear-gradient(135deg,var(--bg-secondary),var(--bg-card));border:1px solid var(--border);border-bottom:2px solid var(--silver);padding:28px 32px;margin-bottom:28px}
+        .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+        .header h1{color:var(--silver-light);font-size:26px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+        .header .version{color:var(--text-secondary);font-size:11px;letter-spacing:1px;margin-top:2px}
+        .security-info{color:var(--gold);font-size:10px;letter-spacing:.5px;margin-top:4px}
+        .status-indicator{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)}
+        .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(74,154,106,.6)}
+        .status-dot.offline{background:var(--red);box-shadow:0 0 8px rgba(154,74,74,.6)}
+        .nav{display:flex;gap:0;margin-top:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+        .nav button{background:none;border:none;color:var(--text-secondary);padding:12px 24px;cursor:pointer;font-size:13px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .3s;font-weight:500;position:relative;bottom:-1px}
+        .nav button:hover{color:var(--silver-light)}
+        .nav button.active{color:var(--silver-light);border-bottom-color:var(--silver)}
+        .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:20px}
+        .card{background:var(--bg-card);border:1px solid var(--border);padding:24px;transition:all .3s}
+        .card:hover{border-color:var(--border-light);background:var(--bg-card-hover)}
+        .card h2{color:var(--silver);font-size:15px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+        .card-full{grid-column:1/-1}
+        .stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);gap:8px}
+        .stat-label{color:var(--text-secondary);font-size:12px;letter-spacing:.5px;flex-shrink:0}
+        .stat-value{color:var(--text-bright);font-weight:500;font-size:13px;text-align:right}
+        .stat-value.green{color:var(--green)}.stat-value.gold{color:var(--gold)}.stat-value.silver{color:var(--silver)}
+        .supply-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+        .supply-item{background:var(--bg-secondary);border:1px solid var(--border);padding:20px;text-align:center}
+        .supply-item .supply-label{color:var(--text-secondary);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+        .supply-item .supply-value{color:var(--silver-light);font-size:22px;font-weight:600}
+        .supply-item .supply-sub{color:var(--text-secondary);font-size:11px;margin-top:4px}
+        input,textarea,select{width:100%;padding:10px 12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-bright);font-size:13px;margin-bottom:10px;font-family:inherit;transition:border-color .3s}
+        input:focus,textarea:focus,select:focus{outline:none;border-color:var(--silver)}
+        textarea{resize:vertical;min-height:70px}select option{background:var(--bg-card);color:var(--text-primary)}
+        .btn{display:inline-block;padding:10px 20px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--silver);cursor:pointer;font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:500;transition:all .3s;margin:3px}
+        .btn:hover{background:var(--border);border-color:var(--silver);color:var(--silver-light)}
+        .btn-primary{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}.btn-primary:hover{background:#7a8aaa}
+        .btn-success{background:var(--green);border-color:var(--green);color:#fff}.btn-success:hover{background:#5aaa7a}
+        .btn-danger{background:var(--red);border-color:var(--red);color:#fff}.btn-danger:hover{background:#aa5a5a}
+        .btn:disabled{opacity:.4;cursor:not-allowed}.btn-sm{padding:6px 14px;font-size:11px}
+        .output{background:var(--bg-secondary);border:1px solid var(--border);padding:16px;margin-top:12px;font-family:'SF Mono','Monaco','Menlo',monospace;font-size:12px;max-height:500px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;color:var(--text-primary)}
+        .output .key{color:var(--silver)}.output .hash{color:var(--accent-blue)}.output .val{color:var(--green)}
+        .clickable{cursor:pointer;transition:color .2s}.clickable:hover{color:var(--silver-light)}
+        .hash-trunc{color:var(--accent-blue);font-family:'SF Mono','Monaco',monospace;font-size:11px}
+        .alert{padding:12px 16px;margin-top:12px;font-size:13px;border-left:3px solid}
+        .alert-success{background:rgba(74,154,106,.1);border-color:var(--green);color:var(--green)}
+        .alert-error{background:rgba(154,74,74,.1);border-color:var(--red);color:#c06060}
+        .alert-warning{background:rgba(154,138,90,.1);border-color:var(--gold);color:var(--gold)}
+        .alert-info{background:rgba(106,122,154,.1);border-color:var(--accent-blue);color:var(--accent-light)}
+        .security-phrase{background:var(--bg-primary);border:2px solid var(--gold);padding:12px;text-align:center;font-family:'SF Mono','Monaco',monospace;font-size:12px;color:var(--gold);letter-spacing:1px;margin-bottom:12px;border-radius:4px}
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:1000;display:flex;align-items:center;justify-content:center}
+        .modal{background:var(--bg-card);border:1px solid var(--border);max-width:950px;width:95%;max-height:85vh;overflow-y:auto;padding:32px;border-radius:8px}
+        .modal h3{color:var(--silver);font-size:16px;margin-bottom:16px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:12px}
+        .modal-close{float:right;background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:0 8px}
+        .hidden{display:none !important}.flex{display:flex;gap:12px;align-items:center}.flex-wrap{flex-wrap:wrap}
+        .mt-2{margin-top:16px}.mb-2{margin-bottom:16px}.text-sm{font-size:11px}.text-muted{color:var(--text-secondary)}
+        .detail-table{width:100%;font-size:12px;border-collapse:collapse}
+        .detail-table tr{border-bottom:1px solid rgba(255,255,255,.05)}
+        .detail-table td{padding:10px 10px;vertical-align:top}
+        .detail-table td:first-child{color:var(--gold);white-space:nowrap;width:130px;letter-spacing:.5px;text-transform:uppercase;font-size:10px;font-weight:600}
+        .detail-table td:last-child{color:var(--text-primary);word-break:break-all;font-family:'SF Mono','Monaco',monospace;font-size:11px}
+        .badge{display:inline-block;padding:2px 8px;font-size:10px;letter-spacing:.5px;text-transform:uppercase;border-radius:3px}
+        .badge-success{background:rgba(74,154,106,.2);color:var(--green)}.badge-pending{background:rgba(154,138,90,.2);color:var(--gold)}
+        .badge-in{background:rgba(74,154,106,.15);color:var(--green)}.badge-out{background:rgba(154,74,74,.15);color:#c06060}
+        .tx-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);gap:8px;cursor:pointer;transition:background .2s;border-radius:4px}
+        .tx-row:hover{background:rgba(255,255,255,.05)}
+        .tx-row .tx-hash{font-family:'SF Mono','Monaco',monospace;font-size:11px;color:var(--accent-blue);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .tx-row .tx-amount{font-size:12px;font-weight:500;white-space:nowrap}
+        .tx-row .tx-type{font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+        .lock-timer{color:var(--gold);font-size:10px;text-align:right;margin-top:4px}
+        .strength-bar{height:4px;background:var(--border);margin-top:4px;margin-bottom:10px;border-radius:2px;overflow:hidden}
+        .strength-fill{height:100%;transition:width .3s,background .3s}
+        .signature-preview{font-size:10px;color:var(--gold);background:rgba(0,0,0,.3);padding:4px 8px;border-radius:3px;margin-top:8px}
+        .close-btn{float:right;background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:20px;padding:0 8px}
+        .close-btn:hover{color:var(--silver-light)}
+        .pagination{display:flex;justify-content:center;gap:6px;margin-top:16px;flex-wrap:wrap}
+        .pagination button{padding:6px 12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;border-radius:4px;font-size:12px}
+        .pagination button:hover{background:var(--border);color:var(--silver-light)}
+        .pagination button.active{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}
+        .pagination button:disabled{opacity:0.4;cursor:not-allowed}
+        .page-info{text-align:center;margin-top:12px;font-size:11px;color:var(--text-secondary)}
+        .json-preview{background:var(--bg-primary);padding:8px;border-radius:4px;font-size:10px;max-height:200px;overflow:auto}
+        @media (max-width:768px){.cards{grid-template-columns:1fr}.supply-grid{grid-template-columns:repeat(2,1fr)}.nav button{padding:10px 14px;font-size:11px}.header{padding:20px}.header h1{font-size:20px}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <h1>XYZChain Secure</h1>
+                    <div class="version">Enterprise Decentralized Blockchain Platform v1.0</div>
+                    <div class="security-info" id="security-status">SECURITY: Initializing...</div>
+                </div>
+                <div class="status-indicator"><span class="status-dot" id="status-dot"></span><span id="connection-status">Connecting...</span></div>
+            </div>
+            <div class="nav">
+                <button onclick="showTab('dashboard')" class="active" id="tab-dashboard">Overview</button>
+                <button onclick="showTab('wallet')" id="tab-wallet">Wallet</button>
+                <button onclick="showTab('mining')" id="tab-mining">Mining</button>
+                <button onclick="showTab('explorer')" id="tab-explorer">Explorer</button>
+                <button onclick="showTab('network')" id="tab-network">Network</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="content-dashboard">
+            <div class="supply-grid mb-2">
+                <div class="supply-item"><div class="supply-label">Total Supply</div><div class="supply-value">800M XYZ</div><div class="supply-sub">Maximum cap</div></div>
+                <div class="supply-item"><div class="supply-label">Circulating</div><div class="supply-value gold" id="circulating-supply">--</div><div class="supply-sub">XYZ in circulation</div></div>
+                <div class="supply-item"><div class="supply-label">Remaining</div><div class="supply-value green" id="remaining-supply">--</div><div class="supply-sub">XYZ left to mine</div></div>
+                <div class="supply-item"><div class="supply-label">Block Reward</div><div class="supply-value" id="block-reward-dash">--</div><div class="supply-sub" id="halving-info">Next halving: --</div></div>
+            </div>
+            <div class="cards">
+                <div class="card"><h2>Network Overview</h2>
+                    <div class="stat-row"><span class="stat-label">Chain Height</span><span class="stat-value" id="dash-height">--</span></div>
+                    <div class="stat-row"><span class="stat-label">Latest Block</span><span class="stat-value hash-trunc" id="dash-latest-hash">--</span></div>
+                    <div class="stat-row"><span class="stat-label">Difficulty</span><span class="stat-value" id="dash-difficulty">--</span></div>
+                    <div class="stat-row"><span class="stat-label">Mempool</span><span class="stat-value" id="dash-mempool">--</span></div>
+                    <div class="stat-row"><span class="stat-label">Active Peers</span><span class="stat-value" id="dash-peers">--</span></div>
+                    <div class="stat-row"><span class="stat-label">Mining</span><span class="stat-value" id="dash-mining">--</span></div>
+                </div>
+                <div class="card"><h2>Latest Blocks</h2><div id="dash-blocks"><span class="text-muted">Loading...</span></div></div>
+            </div>
+        </div>
+
+        <!-- WALLET -->
+        <div id="content-wallet" class="cards hidden">
+            <div class="card card-full">
+                <h2>Security Verification</h2>
+                <div class="security-phrase" id="anti-phishing-phrase">No wallet loaded</div>
+                <div class="text-sm text-muted">Verify this phrase before every transaction. If it changes, you may be on a phishing site.</div>
+            </div>
+            <div class="card card-full"><h2>Stored Wallets (Session Only)</h2><div id="stored-wallets-list"><span class="text-muted">No wallets stored. Create or import a wallet.</span></div><div class="lock-timer" id="lock-timer"></div></div>
+            <div class="card"><h2>Create New Wallet</h2><input type="password" id="wallet-password" placeholder="Password (min 8 chars, mix upper/lower/number)" onkeyup="checkPasswordStrength()"><div class="strength-bar"><div class="strength-fill" id="strength-fill" style="width:0%"></div></div><input type="password" id="wallet-password-confirm" placeholder="Confirm password"><button class="btn btn-primary" onclick="createWallet()">Generate Wallet</button><div id="wallet-result"></div></div>
+            <div class="card"><h2>Import Wallet</h2><select id="import-type" onchange="toggleImportType()"><option value="mnemonic">Mnemonic Phrase (24 words)</option><option value="private_key">Private Key</option></select><div id="import-mnemonic-section"><textarea id="import-mnemonic" placeholder="Enter your 24-word mnemonic phrase..."></textarea></div><div id="import-key-section" class="hidden"><textarea id="import-private-key" placeholder="Enter your private key (PEM format)..."></textarea></div><input type="password" id="import-password" placeholder="Set password for imported wallet"><input type="password" id="import-password-confirm" placeholder="Confirm password"><button class="btn btn-primary" onclick="importWallet()">Import Wallet</button><div id="import-result"></div></div>
+            <div class="card"><h2>Balance Inquiry</h2><input type="text" id="balance-address" placeholder="Enter wallet address"><button class="btn" onclick="checkBalance()">Check Balance</button><div id="balance-result"></div></div>
+            <div class="card"><h2>Send Transaction</h2><div class="security-phrase" id="tx-security-phrase" style="font-size:10px">Verify security phrase above matches before sending</div><input type="text" id="tx-sender" placeholder="Sender address"><input type="text" id="tx-receiver" placeholder="Receiver address"><div class="flex flex-wrap"><input type="number" id="tx-amount" placeholder="Amount (XYZ)" step="0.00000001" style="flex:2"><input type="number" id="tx-fee" placeholder="Fee (XYZ)" step="0.00000001" value="0.0001" style="flex:1"></div><button class="btn btn-success" onclick="sendTransaction()">Send XYZ</button><div id="tx-result"></div></div>
+        </div>
+
+        <!-- MINING -->
+        <div id="content-mining" class="cards hidden">
+            <div class="card"><h2>Mining Control</h2><input type="text" id="miner-address" placeholder="Wallet address for rewards"><div class="flex flex-wrap"><button class="btn btn-success" onclick="startMining()" id="start-mining-btn">Start Mining</button><button class="btn btn-danger" onclick="stopMining()" id="stop-mining-btn" disabled>Stop Mining</button></div><div id="mining-result"></div></div>
+            <div class="card"><h2>Mining Statistics</h2><button class="btn btn-sm mb-2" onclick="loadMiningStatus()">Refresh</button><div id="mining-stats"><span class="text-muted">Miner not active</span></div></div>
+        </div>
+
+        <!-- EXPLORER -->
+        <div id="content-explorer" class="cards hidden">
+            <div class="card card-full"><h2>Blockchain Explorer</h2><div class="flex"><input type="text" id="search-query" placeholder="Block height, hash, TXID, or wallet address..." style="flex:1"><button class="btn btn-primary" onclick="search()">Search</button></div><div id="search-result"></div></div>
+            <div class="card"><h2>Latest Blocks</h2>
+                <div id="blocks-list"><span class="text-muted">Loading...</span></div>
+                <div id="blocks-pagination" class="pagination"></div>
+            </div>
+            <div class="card"><h2>Transaction Mempool</h2>
+                <div id="mempool-list"><span class="text-muted">Loading...</span></div>
+                <div id="mempool-pagination" class="pagination"></div>
+            </div>
+            <div class="card card-full"><h2>All Transactions</h2>
+                <div id="all-transactions-list"><span class="text-muted">Loading...</span></div>
+                <div id="tx-pagination" class="pagination"></div>
+            </div>
+        </div>
+
+        <!-- NETWORK -->
+        <div id="content-network" class="cards hidden">
+            <div class="card"><h2>Network Status</h2><button class="btn btn-sm mb-2" onclick="loadNetworkStats()">Refresh</button><div id="network-stats"><span class="text-muted">Loading...</span></div></div>
+            <div class="card"><h2>Connected Peers</h2><button class="btn btn-sm mb-2" onclick="loadPeers()">Refresh</button><div id="peers-list"><span class="text-muted">Loading...</span></div></div>
+            <div class="card"><h2>Connect to Peer</h2><div class="flex"><input type="text" id="peer-ip" placeholder="Peer IP address" style="flex:2"><input type="number" id="peer-port" placeholder="Port" value="9080" style="flex:1"></div><button class="btn" onclick="addPeer()">Add Peer</button><button class="btn btn-sm mt-2" onclick="syncNow()">Sync with Network</button><div id="peer-result"></div></div>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="modal-overlay hidden" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="document.getElementById('detail-modal').classList.add('hidden')">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+    <div id="toast" style="position:fixed;top:20px;right:20px;z-index:9999;display:none;"></div>
+
+<script>
+// ===== SECURITY CONFIGURATION =====
+const API = '';
+const MAX_SUPPLY = 800000000;
+const SESSION_TIMEOUT = 300000;
+const ITEMS_PER_PAGE = 20;
+
+let walletStore = {}, currentTab = 'dashboard', sessionTimer = null, antiPhishingPhrase = '';
+let allBlocksCache = [], allTransactionsCache = [];
+let blocksCurrentPage = 1, txsCurrentPage = 1, mempoolCurrentPage = 1;
+let totalBlocks = 0, totalTransactions = 0, totalMempool = 0;
+
+function generatePhishingPhrase() {
+    const w = ['Silver','Iron','Steel','Titanium','Cobalt','Nickel','Chrome','Zinc','Copper','Bronze','Platinum','Palladium','Rhodium','Iridium','Osmium'];
+    const n = Math.floor(Math.random() * 9000) + 1000;
+    return w[Math.floor(Math.random() * w.length)] + '-' + n;
+}
+
+antiPhishingPhrase = generatePhishingPhrase();
+document.getElementById('anti-phishing-phrase').textContent = antiPhishingPhrase;
+document.getElementById('security-status').textContent = 'SECURITY: Active | Phrase: ' + antiPhishingPhrase;
+
+function loadWalletStore() {
+    try { const s = sessionStorage.getItem('xyzchain_wallets_secure'); if (s) walletStore = JSON.parse(s); } catch(e) { walletStore = {}; }
+}
+function saveWalletStore() { sessionStorage.setItem('xyzchain_wallets_secure', JSON.stringify(walletStore)); resetSessionTimer(); }
+function storeWallet(address, privateKey, publicKey) { walletStore[address] = { privateKey, publicKey, locked: false, createdAt: Date.now() }; saveWalletStore(); updateSecurityUI(); }
+loadWalletStore();
+
+function resetSessionTimer() { if(sessionTimer) clearTimeout(sessionTimer); sessionTimer = setTimeout(autoLockAll, SESSION_TIMEOUT); updateLockTimer(); }
+function autoLockAll() {
+    let locked = 0;
+    Object.keys(walletStore).forEach(a => { if(!walletStore[a].locked) { walletStore[a].privateKey = null; walletStore[a].locked = true; locked++; } });
+    if(locked > 0) { saveWalletStore(); loadWalletList(); showToast(locked + ' wallet(s) auto-locked for security', 'warning'); }
+}
+function updateLockTimer() {
+    const el = document.getElementById('lock-timer');
+    if(!el) return;
+    const t = sessionTimer ? Math.max(0, Math.ceil(SESSION_TIMEOUT/1000 - Math.floor((Date.now() - (walletStore._lastActivity||Date.now()))/1000))) : 0;
+    el.textContent = t > 0 ? 'Auto-lock in ' + Math.ceil(t/60) + 'm ' + (t%60) + 's' : '';
+}
+setInterval(updateLockTimer, 10000);
+resetSessionTimer();
+
+function updateSecurityUI() {
+    const cnt = Object.keys(walletStore).length;
+    const locked = Object.values(walletStore).filter(w => w.locked).length;
+    document.getElementById('security-status').textContent = 'SECURITY: Active | Phrase: ' + antiPhishingPhrase + ' | Wallets: ' + cnt + ' (' + locked + ' locked)';
+}
+
+function checkPasswordStrength() {
+    const pw = document.getElementById('wallet-password').value;
+    let score = 0;
+    if(pw.length >= 8) score++;
+    if(pw.length >= 12) score++;
+    if(/[A-Z]/.test(pw)) score++;
+    if(/[a-z]/.test(pw)) score++;
+    if(/[0-9]/.test(pw)) score++;
+    if(/[^A-Za-z0-9]/.test(pw)) score++;
+    const pct = (score/6)*100;
+    const bar = document.getElementById('strength-fill');
+    bar.style.width = pct + '%';
+    bar.style.background = pct < 33 ? 'var(--red)' : (pct < 66 ? 'var(--gold)' : 'var(--green)');
+}
+
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    const c = { success: 'rgba(74,154,106,.95)', error: 'rgba(154,74,74,.95)', warning: 'rgba(154,138,90,.95)', info: 'rgba(106,122,154,.95)' };
+    t.style.cssText = `display:block;background:${c[type]||c.info};color:#fff;padding:10px 18px;font-size:13px;z-index:9999;border-radius:4px`;
+    t.textContent = msg;
+    setTimeout(() => t.style.display = 'none', 4000);
+}
+
+async function checkConnection() {
+    try {
+        const r = await fetch('/api/status');
+        const d = await r.json();
+        const dot = document.getElementById('status-dot');
+        if(d.success) {
+            dot.classList.remove('offline');
+            document.getElementById('connection-status').textContent = 'Connected | Chain: ' + (d.data.chain_height || 0) + ' | Peers: ' + (d.data.peers || 0);
+        } else { dot.classList.add('offline'); document.getElementById('connection-status').textContent = 'Node Error'; }
+    } catch(e) { document.getElementById('status-dot').classList.add('offline'); document.getElementById('connection-status').textContent = 'Disconnected'; }
+}
+
+function showTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('[id^="content-"]').forEach(e => e.classList.add('hidden'));
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('content-' + tab).classList.remove('hidden');
+    document.getElementById('tab-' + tab).classList.add('active');
+    if(tab === 'dashboard') loadDashboard();
+    if(tab === 'wallet') loadWalletList();
+    if(tab === 'mining') loadMiningStatus();
+    if(tab === 'explorer') { loadAllBlocksForExplorer(); loadMempool(); loadAllTransactionsForExplorer(); }
+    if(tab === 'network') { loadNetworkStats(); loadPeers(); }
+}
+
+async function apiCall(endpoint, method='GET', data=null) {
+    try {
+        const o = { method, headers: { 'Content-Type': 'application/json' } };
+        if(data && method === 'POST') o.body = JSON.stringify(data);
+        const r = await fetch(endpoint, o);
+        return await r.json();
+    } catch(e) { return { success: false, error: e.message }; }
+}
+
+async function loadDashboard() {
+    const s = await apiCall('/api/status');
+    const c = await apiCall('/chain?limit=5');
+    if(s.success) {
+        const d = s.data;
+        document.getElementById('dash-height').textContent = d.chain_height || 0;
+        document.getElementById('dash-mempool').textContent = d.mempool_size || 0;
+        document.getElementById('dash-peers').textContent = d.peers || 0;
+        document.getElementById('dash-mining').textContent = d.mining ? 'Active' : 'Inactive';
+        const supply = d.total_supply || 0;
+        document.getElementById('circulating-supply').textContent = (supply/1000000).toFixed(2) + 'M XYZ';
+        const remaining = MAX_SUPPLY - supply;
+        document.getElementById('remaining-supply').textContent = (remaining/1000000).toFixed(2) + 'M XYZ (' + ((remaining/MAX_SUPPLY)*100).toFixed(1) + '%)';
+    }
+    if(c.success && c.data.blocks) {
+        const blocks = c.data.blocks.slice(-5).reverse();
+        document.getElementById('dash-blocks').innerHTML = blocks.map(b => '<div class="stat-row clickable" onclick="viewBlock(' + b.index + ')"><span class="stat-label">#' + b.index + '</span><span class="hash-trunc">' + (b.hash || '').substring(0, 20) + '...</span><span class="clickable" style="font-size:10px;color:var(--accent-blue)" onclick="event.stopPropagation();viewBlockTransactions(' + b.index + ')">' + (b.transactions ? b.transactions.length : 0) + ' tx</span></div>').join('');
+        if(blocks.length > 0) {
+            document.getElementById('dash-latest-hash').textContent = (blocks[0].hash || '').substring(0, 20) + '...';
+            document.getElementById('block-reward-dash').textContent = (blocks[0].reward || '--') + ' XYZ';
+        }
+        document.getElementById('dash-difficulty').textContent = blocks.length > 0 ? blocks[0].difficulty : '--';
+    }
+}
+
+function loadWalletList() {
+    const addrs = Object.keys(walletStore);
+    const el = document.getElementById('stored-wallets-list');
+    if(addrs.length === 0) { el.innerHTML = '<span class="text-muted">No wallets loaded. Create or import a wallet to begin.</span>'; return; }
+    el.innerHTML = addrs.map(a => { const w = walletStore[a]; return '<div class="stat-row"><span class="hash-trunc clickable" onclick="document.getElementById(\'balance-address\').value=\'' + a + '\';checkBalance()">' + a.substring(0, 30) + '...</span><span class="stat-value ' + (w.locked ? 'gold' : 'green') + '" style="font-size:10px">' + (w.locked ? 'Locked' : 'Unlocked') + '</span><span style="display:flex;gap:4px"><button class="btn btn-sm" onclick="navigator.clipboard.writeText(\'' + a + '\');showToast(\'Copied\',\'info\')">Copy</button><button class="btn btn-sm" onclick="lockSingleWallet(\'' + a + '\')">Lock</button></span></div>'; }).join('');
+}
+
+function lockSingleWallet(addr) { if(walletStore[addr]) { walletStore[addr].privateKey = null; walletStore[addr].locked = true; saveWalletStore(); loadWalletList(); showToast('Wallet locked', 'warning'); } }
+
+async function createWallet() {
+    const pw = document.getElementById('wallet-password').value, cf = document.getElementById('wallet-password-confirm').value;
+    if(!pw || pw.length < 8) { document.getElementById('wallet-result').innerHTML = '<div class="alert alert-error">Password must be at least 8 characters</div>'; return; }
+    if(pw !== cf) { document.getElementById('wallet-result').innerHTML = '<div class="alert alert-error">Passwords do not match</div>'; return; }
+    document.getElementById('wallet-result').innerHTML = '<div class="alert alert-info">Generating wallet...</div>';
+    const r = await apiCall('/wallet/create', 'POST', { password: pw });
+    if(r.success) {
+        const u = await apiCall('/wallet/unlock', 'POST', { password: pw });
+        if(u.success) storeWallet(r.data.address, u.data.private_key, u.data.public_key);
+        document.getElementById('wallet-result').innerHTML = '<div class="alert alert-success">Wallet created & secured in session</div><div class="output"><span class="key">Address:</span> <span class="hash">' + r.data.address + '</span><br><span class="key">Security:</span> Private key stored in encrypted session memory only</div>';
+        document.getElementById('wallet-password').value = ''; document.getElementById('wallet-password-confirm').value = ''; document.getElementById('strength-fill').style.width = '0%';
+        loadWalletList(); showToast('Wallet ready - auto-locks after inactivity', 'success');
+    } else { document.getElementById('wallet-result').innerHTML = '<div class="alert alert-error">' + (r.error || 'Failed') + '</div>'; }
+}
+
+function toggleImportType() {
+    document.getElementById('import-mnemonic-section').classList.toggle('hidden', document.getElementById('import-type').value !== 'mnemonic');
+    document.getElementById('import-key-section').classList.toggle('hidden', document.getElementById('import-type').value !== 'private_key');
+}
+
+async function importWallet() {
+    const type = document.getElementById('import-type').value, pw = document.getElementById('import-password').value, cf = document.getElementById('import-password-confirm').value;
+    if(!pw || pw.length < 8) { document.getElementById('import-result').innerHTML = '<div class="alert alert-error">Password must be at least 8 characters</div>'; return; }
+    if(pw !== cf) { document.getElementById('import-result').innerHTML = '<div class="alert alert-error">Passwords do not match</div>'; return; }
+    const data = { type, password: pw };
+    if(type === 'mnemonic') { data.mnemonic = document.getElementById('import-mnemonic').value.trim(); if(!data.mnemonic) { document.getElementById('import-result').innerHTML = '<div class="alert alert-error">Enter mnemonic phrase</div>'; return; } }
+    else { data.private_key = document.getElementById('import-private-key').value.trim(); if(!data.private_key) { document.getElementById('import-result').innerHTML = '<div class="alert alert-error">Enter private key</div>'; return; } }
+    document.getElementById('import-result').innerHTML = '<div class="alert alert-info">Importing wallet...</div>';
+    const r = await apiCall('/wallet/import', 'POST', data);
+    if(r.success) {
+        const u = await apiCall('/wallet/unlock', 'POST', { password: pw });
+        if(u.success) storeWallet(r.data.address, u.data.private_key, u.data.public_key);
+        document.getElementById('import-result').innerHTML = '<div class="alert alert-success">Wallet imported & secured</div><div class="output"><span class="key">Address:</span> <span class="hash">' + r.data.address + '</span></div>';
+        document.getElementById('import-mnemonic').value = ''; document.getElementById('import-private-key').value = ''; document.getElementById('import-password').value = ''; document.getElementById('import-password-confirm').value = '';
+        loadWalletList(); showToast('Wallet imported', 'success');
+    } else { document.getElementById('import-result').innerHTML = '<div class="alert alert-error">' + (r.error || 'Import failed') + '</div>'; }
+}
+
+async function checkBalance() {
+    const a = document.getElementById('balance-address').value.trim();
+    if(!a) { document.getElementById('balance-result').innerHTML = '<div class="alert alert-error">Enter address</div>'; return; }
+    document.getElementById('balance-result').innerHTML = '<div class="alert alert-info">Checking...</div>';
+    const r = await apiCall('/wallet/balance?address=' + encodeURIComponent(a));
+    if(r.success) {
+        const b = r.data, isStored = !!walletStore[a];
+        document.getElementById('balance-result').innerHTML = '<div class="output"><div class="stat-row"><span class="stat-label">Address</span><span class="hash-trunc">' + b.address + '</span></div><div class="stat-row"><span class="stat-label">Confirmed</span><span class="stat-value green">' + (b.confirmed || 0).toFixed(8) + ' XYZ</span></div><div class="stat-row"><span class="stat-label">Locked</span><span class="stat-value gold">' + (b.locked || 0).toFixed(8) + ' XYZ</span></div><div class="stat-row"><span class="stat-label">Spendable</span><span class="stat-value silver">' + (b.spendable || 0).toFixed(8) + ' XYZ</span></div>' + (isStored ? '<div class="stat-row"><span class="stat-label">Status</span><span class="stat-value green">In session - ready to send</span></div>' : '') + '</div>';
+    } else { document.getElementById('balance-result').innerHTML = '<div class="alert alert-error">Failed to fetch balance</div>'; }
+}
+
+async function sendTransaction() {
+    const sender = document.getElementById('tx-sender').value.trim(), receiver = document.getElementById('tx-receiver').value.trim(), amount = parseFloat(document.getElementById('tx-amount').value), fee = parseFloat(document.getElementById('tx-fee').value) || 0.0001;
+    if(!sender || !receiver || !amount || amount <= 0) { document.getElementById('tx-result').innerHTML = '<div class="alert alert-error">Fill all required fields</div>'; return; }
+    const confirmPhrase = document.getElementById('anti-phishing-phrase').textContent;
+    if(confirmPhrase !== antiPhishingPhrase) { document.getElementById('tx-result').innerHTML = '<div class="alert alert-error">SECURITY WARNING: Security phrase mismatch! Possible phishing attempt.</div>'; return; }
+    let privateKey = null;
+    if(walletStore[sender] && walletStore[sender].privateKey && !walletStore[sender].locked) { privateKey = walletStore[sender].privateKey; }
+    else {
+        const confirmPhrase2 = prompt('SECURITY: Verify phrase "' + antiPhishingPhrase + '"\n\nWallet locked. Enter password to sign:');
+        if(!confirmPhrase2 || confirmPhrase2 !== antiPhishingPhrase) { document.getElementById('tx-result').innerHTML = '<div class="alert alert-error">Security phrase incorrect. Transaction cancelled.</div>'; return; }
+        const password = prompt('Enter wallet password for ' + sender.substring(0, 16) + '...:');
+        if(!password) { document.getElementById('tx-result').innerHTML = '<div class="alert alert-error">Password required</div>'; return; }
+        document.getElementById('tx-result').innerHTML = '<div class="alert alert-info">Unlocking wallet...</div>';
+        const u = await apiCall('/wallet/unlock', 'POST', { password });
+        if(u.success && u.data.address === sender) {
+            privateKey = u.data.private_key;
+            if(!walletStore[sender]) walletStore[sender] = {};
+            walletStore[sender].privateKey = privateKey; walletStore[sender].publicKey = u.data.public_key; walletStore[sender].locked = false;
+            saveWalletStore();
+        } else { document.getElementById('tx-result').innerHTML = '<div class="alert alert-error">Invalid password</div>'; return; }
+    }
+    document.getElementById('tx-result').innerHTML = '<div class="alert alert-info">Signing & broadcasting...</div>';
+    const res = await apiCall('/transaction/create', 'POST', { sender, receiver, amount, fee, private_key: privateKey });
+    if(res.success) {
+        document.getElementById('tx-result').innerHTML = '<div class="alert alert-success">Transaction signed & broadcast</div><div class="output"><span class="key">TXID:</span> <span class="hash clickable" onclick="viewTransaction(\'' + res.data.txid + '\')">' + res.data.txid + '</span></div>';
+        showToast('Transaction sent!', 'success');
+        document.getElementById('tx-sender').value = ''; document.getElementById('tx-receiver').value = ''; document.getElementById('tx-amount').value = '';
+        setTimeout(() => { loadAllTransactionsForExplorer(); loadMempool(); }, 2000);
+    } else {
+        document.getElementById('tx-result').innerHTML = '<div class="alert alert-error">' + (res.error || 'Failed') + '</div>';
+        if(res.error && res.error.includes('sign') && walletStore[sender]) { walletStore[sender].privateKey = null; walletStore[sender].locked = true; saveWalletStore(); }
+    }
+}
+
+async function startMining() {
+    const a = document.getElementById('miner-address').value.trim();
+    if(!a) { document.getElementById('mining-result').innerHTML = '<div class="alert alert-error">Enter wallet address</div>'; return; }
+    const r = await apiCall('/mine/start', 'POST', { address: a });
+    if(r.success) { document.getElementById('start-mining-btn').disabled = true; document.getElementById('stop-mining-btn').disabled = false; document.getElementById('mining-result').innerHTML = '<div class="alert alert-success">Mining active</div>'; loadMiningStatus(); }
+    else { document.getElementById('mining-result').innerHTML = '<div class="alert alert-error">' + (r.error || 'Failed') + '</div>'; }
+}
+
+async function stopMining() { await apiCall('/mine/stop', 'POST'); document.getElementById('start-mining-btn').disabled = false; document.getElementById('stop-mining-btn').disabled = true; document.getElementById('mining-result').innerHTML = '<div class="alert alert-warning">Mining stopped</div>'; loadMiningStatus(); }
+
+async function loadMiningStatus() {
+    const r = await apiCall('/mine/status');
+    if(r.success) { const s = r.data; document.getElementById('mining-stats').innerHTML = '<div class="output"><div class="stat-row"><span class="stat-label">Status</span><span class="stat-value ' + (s.is_running ? 'green' : '') + '">' + (s.is_running ? 'Mining Active' : 'Stopped') + '</span></div><div class="stat-row"><span class="stat-label">Hash Rate</span><span class="stat-value">' + (s.hash_rate || 0).toLocaleString() + ' H/s</span></div><div class="stat-row"><span class="stat-label">Chain Height</span><span class="stat-value">' + (s.chain_height || 0) + '</span></div><div class="stat-row"><span class="stat-label">Difficulty</span><span class="stat-value">' + (s.difficulty || 4) + '</span></div><div class="stat-row"><span class="stat-label">Block Reward</span><span class="stat-value">' + (s.block_reward || '--') + ' XYZ</span></div></div>'; }
+}
+
+async function loadAllBlocksForExplorer() {
+    const r = await apiCall('/chain?limit=200');
+    if(r.success && r.data.blocks) {
+        allBlocksCache = [...r.data.blocks].reverse();
+        totalBlocks = allBlocksCache.length;
+        blocksCurrentPage = 1;
+        renderBlocksPage();
+    }
+}
+
+function renderBlocksPage() {
+    const start = (blocksCurrentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const pageBlocks = allBlocksCache.slice(start, end);
+    const totalPages = Math.ceil(totalBlocks / ITEMS_PER_PAGE);
+    document.getElementById('blocks-list').innerHTML = '<div style="color:var(--text-secondary);font-size:11px;margin-bottom:8px"> Total ' + totalBlocks + ' blocks</div>' + 
+        pageBlocks.map(b => '<div class="stat-row"><span class="stat-label clickable" onclick="viewBlock(' + b.index + ')">#' + b.index + '</span>' +
+            '<span class="hash-trunc clickable" onclick="viewBlock(' + b.index + ')">' + (b.hash || '').substring(0, 18) + '...</span>' +
+            '<span class="clickable" style="font-size:10px;color:var(--accent-blue);cursor:pointer" onclick="viewBlockTransactions(' + b.index + ')">' + (b.transactions ? b.transactions.length : 0) + ' tx</span>' +
+            '</div>').join('');
+    
+    let paginationHtml = '<div class="pagination">';
+    paginationHtml += `<button onclick="blocksCurrentPage=1;renderBlocksPage()" ${blocksCurrentPage===1?'disabled':''}> First</button>`;
+    paginationHtml += `<button onclick="blocksCurrentPage--;renderBlocksPage()" ${blocksCurrentPage===1?'disabled':''}>◀ Prev</button>`;
+    for(let i = Math.max(1, blocksCurrentPage-2); i <= Math.min(totalPages, blocksCurrentPage+2); i++) {
+        paginationHtml += `<button onclick="blocksCurrentPage=${i};renderBlocksPage()" class="${i===blocksCurrentPage?'active':''}">${i}</button>`;
+    }
+    paginationHtml += `<button onclick="blocksCurrentPage++;renderBlocksPage()" ${blocksCurrentPage===totalPages?'disabled':''}>Next ▶</button>`;
+    paginationHtml += `<button onclick="blocksCurrentPage=${totalPages};renderBlocksPage()" ${blocksCurrentPage===totalPages?'disabled':''}>Last </button>`;
+    paginationHtml += `</div><div class="page-info">Page ${blocksCurrentPage} of ${totalPages}</div>`;
+    document.getElementById('blocks-pagination').innerHTML = paginationHtml;
+}
+
+async function loadAllTransactionsForExplorer() {
+    const r = await apiCall('/chain?limit=200');
+    if(r.success && r.data.blocks) {
+        let allTx = [];
+        for(const b of r.data.blocks) {
+            if(b.transactions && b.transactions.length > 0) {
+                for(const tx of b.transactions) {
+                    allTx.push({ 
+                        ...tx, 
+                        blockIndex: b.index, 
+                        blockHash: b.hash, 
+                        timestamp: tx.timestamp || b.timestamp 
+                    });
+                }
+            }
+        }
+        allTx.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+        allTransactionsCache = allTx;
+        totalTransactions = allTransactionsCache.length;
+        txsCurrentPage = 1;
+        renderTransactionsPage();
+    }
+}
+
+function renderTransactionsPage() {
+    const start = (txsCurrentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const pageTxs = allTransactionsCache.slice(start, end);
+    const totalPages = Math.ceil(totalTransactions / ITEMS_PER_PAGE);
+    document.getElementById('all-transactions-list').innerHTML = '<div style="color:var(--text-secondary);font-size:11px;margin-bottom:8px"> Total ' + totalTransactions + ' transactions</div>' +
+        pageTxs.map(tx => '<div class="tx-row" onclick="viewTransactionFull(\'' + tx.txid + '\', ' + tx.blockIndex + ')">' +
+            '<span class="tx-hash">' + (tx.txid || '').substring(0, 20) + '...</span>' +
+            '<span class="tx-type ' + (tx.sender === '0' ? 'badge-success' : 'badge-out') + '">' + (tx.sender === '0' ? ' REWARD' : ' TX') + '</span>' +
+            '<span class="tx-amount ' + (tx.sender === '0' ? 'green' : '') + '">' + parseFloat(tx.amount).toFixed(8) + ' XYZ</span>' +
+            (tx.nonce ? '<span style="font-size:9px;color:var(--text-secondary);margin-left:8px"> nonce:' + tx.nonce + '</span>' : '') +
+            (tx.signature ? '<span style="font-size:8px;color:var(--gold);margin-left:8px"> signed</span>' : '') +
+            '<span style="font-size:9px;color:var(--text-secondary);margin-left:8px"> #' + tx.blockIndex + '</span>' +
+            '</div>').join('') || '<span class="text-muted">No transactions yet</span>';
+    
+    let paginationHtml = '<div class="pagination">';
+    paginationHtml += `<button onclick="txsCurrentPage=1;renderTransactionsPage()" ${txsCurrentPage===1?'disabled':''}> First</button>`;
+    paginationHtml += `<button onclick="txsCurrentPage--;renderTransactionsPage()" ${txsCurrentPage===1?'disabled':''}>◀ Prev</button>`;
+    for(let i = Math.max(1, txsCurrentPage-2); i <= Math.min(totalPages, txsCurrentPage+2); i++) {
+        paginationHtml += `<button onclick="txsCurrentPage=${i};renderTransactionsPage()" class="${i===txsCurrentPage?'active':''}">${i}</button>`;
+    }
+    paginationHtml += `<button onclick="txsCurrentPage++;renderTransactionsPage()" ${txsCurrentPage===totalPages?'disabled':''}>Next ▶</button>`;
+    paginationHtml += `<button onclick="txsCurrentPage=${totalPages};renderTransactionsPage()" ${txsCurrentPage===totalPages?'disabled':''}>Last </button>`;
+    paginationHtml += `</div><div class="page-info">Page ${txsCurrentPage} of ${totalPages}</div>`;
+    document.getElementById('tx-pagination').innerHTML = paginationHtml;
+}
+
+async function loadMempool() {
+    const r = await apiCall('/mempool');
+    if(r.success && r.data.transactions) {
+        const mempoolTxs = r.data.transactions;
+        totalMempool = mempoolTxs.length;
+        mempoolCurrentPage = 1;
+        const totalPages = Math.ceil(totalMempool / ITEMS_PER_PAGE);
+        const start = 0;
+        const pageTxs = mempoolTxs.slice(start, start + ITEMS_PER_PAGE);
+        document.getElementById('mempool-list').innerHTML = '<div style="color:var(--text-secondary);font-size:11px;margin-bottom:8px"> ' + totalMempool + ' pending transactions</div>' +
+            pageTxs.map(tx => '<div class="tx-row" onclick="viewTransactionFull(\'' + tx.txid + '\', -1)">' +
+                '<span class="tx-hash">' + (tx.txid || '').substring(0, 20) + '...</span>' +
+                '<span class="tx-type badge-pending"> PENDING...</span>' +
+                '<span class="tx-amount">' + parseFloat(tx.amount).toFixed(8) + ' XYZ</span>' +
+                (tx.nonce ? '<span style="font-size:9px;color:var(--text-secondary);margin-left:8px">nonce:' + tx.nonce + '</span>' : '') +
+                (tx.signature ? '<span style="font-size:8px;color:var(--gold);margin-left:8px">signed</span>' : '') +
+                '</div>').join('');
+        
+        let paginationHtml = '<div class="pagination">';
+        paginationHtml += `<button onclick="mempoolCurrentPage=1;loadMempool()" ${mempoolCurrentPage===1?'disabled':''}> First</button>`;
+        paginationHtml += `<button onclick="mempoolCurrentPage--;loadMempool()" ${mempoolCurrentPage===1?'disabled':''}>◀ Prev</button>`;
+        for(let i = Math.max(1, mempoolCurrentPage-2); i <= Math.min(totalPages, mempoolCurrentPage+2); i++) {
+            paginationHtml += `<button onclick="mempoolCurrentPage=${i};loadMempool()" class="${i===mempoolCurrentPage?'active':''}">${i}</button>`;
+        }
+        paginationHtml += `<button onclick="mempoolCurrentPage++;loadMempool()" ${mempoolCurrentPage===totalPages?'disabled':''}>Next ▶</button>`;
+        paginationHtml += `<button onclick="mempoolCurrentPage=${totalPages};loadMempool()" ${mempoolCurrentPage===totalPages?'disabled':''}>Last </button>`;
+        paginationHtml += `</div><div class="page-info">Page ${mempoolCurrentPage} of ${totalPages}</div>`;
+        document.getElementById('mempool-pagination').innerHTML = paginationHtml;
+    }
+}
+
+// NEW: Fetch full transaction details from block
+async function viewTransactionFull(txid, blockIndex) {
+    showToast('Fetching transaction details...', 'info');
+    
+    // If blockIndex is provided and not -1, fetch the full block
+    if (blockIndex >= 0) {
+        const blockData = await apiCall('/block/' + blockIndex);
+        if (blockData.success && blockData.data && blockData.data.transactions) {
+            const fullTx = blockData.data.transactions.find(tx => tx.txid === txid);
+            if (fullTx) {
+                displayTransactionModal(fullTx, blockIndex);
+                return;
+            }
+        }
+    }
+    
+    // Fallback: search through all cached transactions
+    for (const tx of allTransactionsCache) {
+        if (tx.txid === txid) {
+            displayTransactionModal(tx, blockIndex);
+            return;
+        }
+    }
+    
+    // Check mempool
+    const mempoolData = await apiCall('/mempool');
+    if (mempoolData.success && mempoolData.data.transactions) {
+        const mempoolTx = mempoolData.data.transactions.find(tx => tx.txid === txid);
+        if (mempoolTx) {
+            displayTransactionModal(mempoolTx, -1);
+            return;
+        }
+    }
+    
+    showToast('Transaction not found', 'error');
+}
+
+function displayTransactionModal(tx, blockIndex) {
+    const isCoinbase = tx.sender === '0' || tx.sender === 'XYZCHAIN_GENESIS_ADDRESS';
+    const isMempool = blockIndex === -1;
+    const hasSignature = tx.signature && tx.signature !== '';
+    const hasPublicKey = tx.public_key && tx.public_key !== '';
+    const hasNonce = tx.nonce !== undefined && tx.nonce !== null && tx.nonce !== 0;
+    const hasTxHash = tx.transaction_hash && tx.transaction_hash !== '';
+    
+    document.getElementById('modal-content').innerHTML = `
+        <h3> Transaction Details ${isMempool ? '(In Mempool)' : ''}</h3>
+        <table class="detail-table">
+            <tr><td> TXID</td><td class="hash" style="word-break:break-all">${tx.txid || 'N/A'}</td></tr>
+            ${blockIndex >= 0 ? `<tr><td> Block</td><td class="clickable hash" onclick="viewBlock(${blockIndex});document.getElementById('detail-modal').classList.add('hidden')">#${blockIndex}</td></tr>` : ''}
+            <tr><td> Type</td><td>${isCoinbase ? '<span class="badge badge-success"> COINBASE (Mining Reward)</span>' : '<span class="badge badge-out"> TRANSFER</span>'}</td></tr>
+            <tr><td> Sender</td><td class="hash-trunc">${tx.sender || 'Network (Coinbase)'}</td></tr>
+            <tr><td> Receiver</td><td class="hash-trunc">${tx.receiver || 'N/A'}</td></tr>
+            <tr><td> Amount</td><td class="val" style="color:var(--green);font-weight:bold">${parseFloat(tx.amount).toFixed(8)} XYZ</td></tr>
+            <tr><td>⚡ Fee</td><td>${parseFloat(tx.fee || 0).toFixed(8)} XYZ</td></tr>
+            ${hasNonce ? `<tr><td> Nonce</td><td>${tx.nonce}</td></tr>` : ''}
+            ${tx.timestamp ? `<tr><td> Timestamp</td><td>${new Date(tx.timestamp * 1000).toISOString().replace('T', ' ').substring(0, 19)}</td></tr>` : ''}
+            ${hasPublicKey ? `<tr><td> Public Key</td><td style="font-size:9px;word-break:break-all;font-family:monospace">${truncateString(tx.public_key, 100)}</td></tr>` : ''}
+            ${hasSignature ? `<tr><td> Signature</td><td style="font-size:8px;word-break:break-all;font-family:monospace">${truncateString(tx.signature, 100)}</td></tr>` : ''}
+            ${hasTxHash ? `<tr><td> TX Hash</td><td class="hash" style="word-break:break-all">${tx.transaction_hash}</td></tr>` : ''}
+            <tr><td> Verified</td><td>${hasSignature ? '<span class="badge badge-success">✓ Cryptographically Signed (ECDSA secp256k1)</span>' : (isCoinbase ? '<span class="badge badge-success">✓ Coinbase (Valid Block Reward)</span>' : '<span class="badge badge-pending"> Not Signed</span>')}</td></tr>
+        </table>
+        ${hasSignature ? '<div class="signature-preview">🔐 Signature verified with ECDSA secp256k1 curve</div>' : ''}
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:10px;color:var(--text-secondary)">
+            📋 Raw Transaction Data:
+            <div class="json-preview" style="margin-top:8px;font-size:9px;word-break:break-all">${JSON.stringify(tx, null, 2).substring(0, 500)}${JSON.stringify(tx, null, 2).length > 500 ? '...' : ''}</div>
+        </div>
+    `;
+    document.getElementById('detail-modal').classList.remove('hidden');
+}
+
+// Legacy function for compatibility
+function viewTransactionFromData(tx, blockIndex) {
+    displayTransactionModal(tx, blockIndex);
+}
+
+function truncateString(str, maxLen) { if(!str) return 'N/A'; if(str.length <= maxLen) return str; return str.substring(0, maxLen) + '...'; }
+
+async function viewBlock(index) {
+    const r = await apiCall('/block/' + index);
+    if(r.success && r.data) {
+        const b = r.data;
+        document.getElementById('modal-content').innerHTML = 
+            '<h3> Block #' + b.index + '</h3>' +
+            '<table class="detail-table">' +
+            '<tr><td> Hash</td><td class="hash">' + (b.hash || 'N/A') + '</td></tr>' +
+            '<tr><td> Previous Hash</td><td class="hash">' + (b.previous_hash || 'N/A') + '</td></tr>' +
+            '<tr><td> Timestamp</td><td>' + new Date(b.timestamp * 1000).toISOString().replace('T', ' ').substring(0, 19) + '</td></tr>' +
+            '<tr><td> Difficulty</td><td>' + (b.difficulty || 4) + '</td></tr>' +
+            '<tr><td> Nonce</td><td>' + (b.nonce || 0).toLocaleString() + '</td></tr>' +
+            '<tr><td> Merkle Root</td><td class="hash">' + (b.merkle_root || 'N/A') + '</td></tr>' +
+            '<tr><td> Miner</td><td class="hash-trunc">' + (b.miner_address || 'Unknown') + '</td></tr>' +
+            '<tr><td> Reward</td><td class="val">' + (b.reward || 0) + ' XYZ</td></tr>' +
+            (b.block_signature ? '<tr><td> Block Signature</td><td style="font-size:9px;word-break:break-all">' + truncateString(b.block_signature, 80) + '</td></tr>' : '') +
+            '<tr><td> Block Size</td><td>' + (b.block_size || 0) + ' bytes</td></tr>' +
+            '<tr><td> Version</td><td>' + (b.version || 1) + '</td></tr>' +
+            '<tr><td> Transactions</td><td>' + (b.transactions ? b.transactions.length : 0) + '</td></tr>' +
+            '</table>' +
+            (b.transactions && b.transactions.length > 0 ? 
+                '<h3 style="margin-top:20px">📝 Transactions in this Block</h3><div>' + 
+                b.transactions.map(tx => '<div class="tx-row" onclick="viewTransactionFull(\'' + tx.txid + '\', ' + b.index + ')">' +
+                    '<span class="tx-hash">' + (tx.txid || '').substring(0, 24) + '...</span>' +
+                    '<span class="tx-type ' + (tx.sender === '0' ? 'badge-success' : 'badge-out') + '">' + (tx.sender === '0' ? ' REWARD' : ' TX') + '</span>' +
+                    '<span class="tx-amount ' + (tx.sender === '0' ? 'green' : '') + '">' + parseFloat(tx.amount).toFixed(8) + ' XYZ</span>' +
+                    (tx.nonce ? '<span style="font-size:9px;color:var(--text-secondary);margin-left:8px">nonce:' + tx.nonce + '</span>' : '') +
+                    (tx.signature ? '<span style="font-size:8px;color:var(--gold);margin-left:8px"> signed</span>' : '') +
+                    '</div>').join('') +
+                '</div>' : '<p class="text-muted">No transactions in this block</p>');
+        document.getElementById('detail-modal').classList.remove('hidden');
+    }
+}
+
+async function viewBlockTransactions(index) { 
+    const r = await apiCall('/block/' + index); 
+    if(r.success && r.data) { 
+        const b = r.data; 
+        document.getElementById('modal-content').innerHTML = '<h3> Block #' + b.index + ' Transactions</h3>' + 
+            (b.transactions && b.transactions.length > 0 ? '<div>' + 
+                b.transactions.map(tx => '<div class="tx-row" onclick="viewTransactionFull(\'' + tx.txid + '\', ' + b.index + ')">' +
+                    '<span class="tx-hash">' + (tx.txid || '').substring(0, 24) + '...</span>' +
+                    '<span class="tx-type ' + (tx.sender === '0' ? 'badge-success' : 'badge-out') + '">' + (tx.sender === '0' ? ' REWARD' : ' TX') + '</span>' +
+                    '<span class="tx-amount ' + (tx.sender === '0' ? 'green' : '') + '">' + parseFloat(tx.amount).toFixed(8) + ' XYZ</span>' +
+                    (tx.nonce ? '<span style="font-size:9px;color:var(--text-secondary);margin-left:8px">nonce:' + tx.nonce + '</span>' : '') +
+                    (tx.signature ? '<span style="font-size:8px;color:var(--gold);margin-left:8px"> signed</span>' : '') +
+                    '</div>').join('') +
+                '</div>' : '<p class="text-muted">No transactions</p>'); 
+        document.getElementById('detail-modal').classList.remove('hidden'); 
+    } 
+}
+
+async function viewTransaction(txid) {
+    await viewTransactionFull(txid, -1);
+}
+
+async function search() {
+    const q = document.getElementById('search-query').value.trim();
+    if(!q) return;
+    document.getElementById('search-result').innerHTML = '<div class="alert alert-info">🔍 Searching...</div>';
+    
+    // Search by block height
+    if(/^\d+$/.test(q)) {
+        const r = await apiCall('/block/' + q);
+        if(r.success && r.data) { viewBlock(parseInt(q)); return; }
+        document.getElementById('search-result').innerHTML = '<div class="alert alert-error">❌ Block #' + q + ' not found</div>'; 
+        return;
+    }
+    
+    // Search by hash or txid
+    if(/^[a-fA-F0-9]{64}$/.test(q)) {
+        // Try as block hash
+        const br = await apiCall('/block/hash/' + q);
+        if(br.success && br.data) { viewBlock(br.data.index); return; }
+        
+        // Search in blocks
+        const cr = await apiCall('/chain');
+        if(cr.success && cr.data.blocks) {
+            for(const b of cr.data.blocks) {
+                if(b.hash === q) { viewBlock(b.index); return; }
+                if(b.transactions) {
+                    for(const tx of b.transactions) {
+                        if(tx.txid === q) { 
+                            displayTransactionModal(tx, b.index);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Search in mempool
+        const mr = await apiCall('/mempool');
+        if(mr.success && mr.data.transactions) {
+            for(const tx of mr.data.transactions) {
+                if(tx.txid === q) {
+                    displayTransactionModal(tx, -1);
+                    return;
+                }
+            }
+        }
+        document.getElementById('search-result').innerHTML = '<div class="alert alert-error"> Hash/TXID not found</div>'; 
+        return;
+    }
+    
+    // Search as wallet address
+    const r = await apiCall('/wallet/balance?address=' + encodeURIComponent(q));
+    if(r.success) {
+        const b = r.data;
+        document.getElementById('search-result').innerHTML = '<div class="output"><div class="stat-row"><span class="stat-label"> Type</span><span class="badge badge-success">Wallet Address</span></div><div class="stat-row"><span class="stat-label"> Address</span><span class="hash-trunc">' + b.address + '</span></div><div class="stat-row"><span class="stat-label"> Confirmed</span><span class="stat-value green">' + (b.confirmed || 0).toFixed(8) + ' XYZ</span></div><div class="stat-row"><span class="stat-label"> Spendable</span><span class="stat-value silver">' + (b.spendable || 0).toFixed(8) + ' XYZ</span></div></div>';
+        return;
+    }
+    document.getElementById('search-result').innerHTML = '<div class="alert alert-error"> No results found for "' + q + '"</div>';
+}
+
+function closeModal(e) { if(e && e.target === document.getElementById('detail-modal')) document.getElementById('detail-modal').classList.add('hidden'); }
+
+async function loadNetworkStats() {
+    const r = await apiCall('/network/stats');
+    if(r.success) { const d = r.data; document.getElementById('network-stats').innerHTML = '<div class="output"><div class="stat-row"><span class="stat-label"> Chain Height</span><span class="stat-value">' + d.chain_height + '</span></div><div class="stat-row"><span class="stat-label">🖧 Active Peers</span><span class="stat-value">' + d.active_peers + '</span></div><div class="stat-row"><span class="stat-label"> Total Peers</span><span class="stat-value">' + d.total_peers + '</span></div><div class="stat-row"><span class="stat-label">⛏️ Mining</span><span class="stat-value ' + (d.mining ? 'green' : '') + '">' + (d.mining ? 'Active' : 'Inactive') + '</span></div><div class="stat-row"><span class="stat-label"> Total Supply</span><span class="stat-value">' + (d.total_supply || 0).toFixed(2) + ' XYZ</span></div><div class="stat-row"><span class="stat-label"> Signature Enforce</span><span class="stat-value green">STRICT (ECDSA)</span></div></div>'; }
+}
+
+async function loadPeers() {
+    const r = await apiCall('/peers');
+    if(r.success && r.data.peers) { document.getElementById('peers-list').innerHTML = '<div style="color:var(--text-secondary);font-size:11px;margin-bottom:8px">🖧 ' + r.data.active + ' active / ' + r.data.total + ' total</div>' + r.data.peers.map(p => '<div class="stat-row"><span class="stat-label">' + p.ip + ':' + p.port + '</span><span class="stat-value">Reputation: ' + p.reputation + '</span></div>').join(''); }
+    else { document.getElementById('peers-list').innerHTML = '<span class="text-muted">No peers connected</span>'; }
+}
+
+async function addPeer() { const ip = document.getElementById('peer-ip').value.trim(), p = parseInt(document.getElementById('peer-port').value) || 9080; if(!ip) { document.getElementById('peer-result').innerHTML = '<div class="alert alert-error">Enter peer IP</div>'; return; } const r = await apiCall('/peers/register', 'POST', { ip, port: p }); if(r.success) { document.getElementById('peer-result').innerHTML = '<div class="alert alert-success">Peer ' + ip + ':' + p + ' added</div>'; loadPeers(); } else { document.getElementById('peer-result').innerHTML = '<div class="alert alert-error">Failed to add peer</div>'; } }
+
+async function syncNow() { await apiCall('/sync/start', 'POST'); showToast('Sync initiated', 'info'); loadNetworkStats(); }
+
+document.addEventListener('DOMContentLoaded', function() { checkConnection(); loadDashboard(); loadWalletList(); updateSecurityUI(); setInterval(checkConnection, 30000); setInterval(() => { if(currentTab === 'dashboard') loadDashboard(); }, 15000); setInterval(updateLockTimer, 5000); });
+window.addEventListener('beforeunload', function() { autoLockAll(); });
+</script>
+</body>
+</html>
