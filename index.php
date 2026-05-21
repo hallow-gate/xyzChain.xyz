@@ -686,7 +686,7 @@ try {
             foreach ($required as $field) {
                 if (empty($input[$field])) {
                     $response = ['success' => false, 'error' => "Missing field: {$field}"];
-                    break 2;
+                    break;
                 }
             }
             
